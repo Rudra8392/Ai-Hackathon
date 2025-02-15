@@ -7,143 +7,118 @@ An intelligent system for monitoring, analyzing, and optimizing oil and gas prod
 Check out the live monitoring dashboard:
 [Production Monitoring Dashboard](https://ai-hackathon-kjgcgp5bttkeyooucznr8v.streamlit.app/)
 
-
-![WhatsApp Image 2025-02-15 at 21 13 29_8f327002](https://github.com/user-attachments/assets/63d986a1-391c-4527-a8fb-9b4573286112)
+![Monitoring Dashboard](https://github.com/user-attachments/assets/63d986a1-391c-4527-a8fb-9b4573286112)
 
 ## 🚀 Features
 
-- Real-time production monitoring and visualization
-- AI-powered flow prediction using LSTM neural networks
-- Production decline analysis and pattern detection
-- Automated optimization of production parameters
-- RESTful API for model deployment and integration
-- Interactive monitoring dashboard built with Streamlit
+- **Real-time production monitoring & visualization**
+- **AI-powered flow prediction using LSTM**
+- **Production decline detection & analysis**
+- **Automated optimization of production parameters**
+- **RESTful API for deployment & integration**
+- **Interactive dashboard (Streamlit)**
 
-## 💁️ Project Structure
+## 🛠️ Project Structure
 
 ```
-├── Data_Platform MC - Copy.xlsm    # Platform production data
-├── Platform MC_Low Pressure System Monitoring.xlsb
-├── Well_Tests.xlsx                 # Well test data
-├── api_deployment.py               # FastAPI service deployment
-├── decline_analysis.py            # Production decline analysis
-├── eval.py                        # Model evaluation scripts
-├── flow_prediction.py             # LSTM-based flow prediction
-├── monitoring_dashboard.py        # Streamlit dashboard
-├── optimization_model.py          # Production optimization
-├── preprocessed_data.csv          # Processed dataset
-└── requirements.txt               # Project dependencies
+├── Data_Platform MC.xlsm    # Platform production data
+├── Well_Tests.xlsx          # Well test data
+├── api_deployment.py        # FastAPI service deployment
+├── decline_analysis.py      # Production decline analysis
+├── eval.py                  # Model evaluation scripts
+├── flow_prediction.py       # LSTM-based flow prediction
+├── monitoring_dashboard.py  # Streamlit dashboard
+├── optimization_model.py    # Production optimization
+├── preprocessed_data.csv    # Processed dataset
+└── requirements.txt         # Project dependencies
 ```
 
-## 🛠️ Installation
+## 🔧 Installation
 
-1. Clone the repository
-2. Install dependencies:
-   ```bash
-   git clone https://github.com/Rudra8392/Ai-Hackathon
-   cd Ai-Hackathon
-   pip install -r requirements.txt
-   ```
+```bash
+git clone https://github.com/Rudra8392/Ai-Hackathon
+cd Ai-Hackathon
+pip install -r requirements.txt
+```
 
-## 🔧 Components
+## 📊 AI Model Components
 
 ### 1. Flow Prediction Model
 
-- LSTM-based neural network for production forecasting
-- Features: Total flow, oil flow, water flow, gas flow, pressure, temperature, and GOR
-- Sequence-based prediction with 24-hour lookback window
+- **Model:** LSTM (Long Short-Term Memory)
+- **Features:** Total flow, oil flow, water flow, gas flow, pressure, temperature, and GOR
+- **Training:** 4-month historical data, 2-month test window
+- **Evaluation:** MAE, RMSE, R²
 
 ### 2. Decline Analysis
 
-- Automated detection of production decline events
-- Pattern clustering using DBSCAN
-- Anomaly detection with Isolation Forest
-- Performance metrics calculation and visualization
+- **Automated decline detection** using anomaly detection (Isolation Forest, DBSCAN)
+- **Root cause analysis** using classification models (Random Forest, XGBoost)
+- **Pattern clustering** for similar well behaviors
 
 ### 3. Production Optimization
 
-- Differential evolution algorithm for parameter optimization
-- Constraint-based optimization of flow rates, pressure, and GOR
-- Real-time optimization suggestions
+- **Goal:** Maximize production efficiency while minimizing bottlenecks
+- **Techniques:** Genetic Algorithms, Reinforcement Learning, Constraint-Based Optimization
 
 ### 4. Monitoring Dashboard
 
-- Real-time visualization of production parameters
-- Key Performance Indicators (KPIs)
-- Interactive date range selection
-- Historical data analysis
+- **Real-time visualization** of production parameters
+- **Key Performance Indicators (KPIs)**
+- **Historical data analysis**
 
 ### 5. API Service
 
-- FastAPI-based REST API
-- Real-time prediction endpoints
-- Production data validation
-- Error handling and logging
+- **FastAPI-based REST API** for real-time predictions
+- **Endpoints:** Flow rate prediction, anomaly detection, optimization suggestions
+- **Data validation & error handling**
 
-### 6. Model Evaluation (eval.py)
+### 6. Model Evaluation
 
-- Evaluation of LSTM model performance
-- Metrics calculated: MAE, RMSE, R2
-- Visualizations: Actual vs Predicted plot, Residual plot
-- Sample performance results:
-  - MAE: 67.8183
-  - RMSE: 84.7019
-  - R2: 0.7280
-
-## 📊 Model Performance
-
-The system includes comprehensive evaluation metrics:
-
-- Flow prediction accuracy
-- Decline event detection precision
-- Optimization effectiveness
-- Real-time prediction latency
+- **Metrics:**
+  - Mean Absolute Error (MAE): 67.8183
+  - Root Mean Square Error (RMSE): 84.7019
+  - R²: 0.7280
+- **Visualizations:** Actual vs. predicted plots, residual analysis
 
 ## 🚀 Usage
 
-1. Start the API service:
-
+1. **Start API service:**
    ```bash
    python api_deployment.py
    ```
 
-2. Launch the monitoring dashboard:
-
+2. **Launch monitoring dashboard:**
    ```bash
    streamlit run monitoring_dashboard.py
    ```
 
-3. Run decline analysis:
-
+3. **Run decline analysis:**
    ```bash
    python decline_analysis.py
    ```
 
-4. Train the flow prediction model:
-
+4. **Train flow prediction model:**
    ```bash
    python flow_prediction.py
    ```
 
-5. Optimize production parameters:
-
+5. **Optimize production parameters:**
    ```bash
    python optimization_model.py
    ```
 
-6. Evaluate the model:
-
+6. **Evaluate model performance:**
    ```bash
    python eval.py
    ```
 
-## 📈 API Endpoints
+## 📡 API Endpoints
 
-- `GET /`: API health check
-- `POST /predict/flow`: Production flow prediction
+- **`GET /`** - API health check
+- **`POST /predict/flow`** - Predicts production flow rates
 
-Example Request Body:
-
+### Example Request:
 ```json
 {
   "timestamp": "2024-02-15T00:00:00",
@@ -157,12 +132,13 @@ Example Request Body:
 }
 ```
 
-## 📝 Footer
+## 📝 Summary
 
-This project is designed to improve operational efficiency and decision-making in oil and gas production using AI-powered solutions. The evaluation of our flow prediction model demonstrated reliable performance with the following key metrics:
+This project enhances oil & gas production monitoring using AI-powered solutions. Key capabilities include real-time flow prediction, production decline detection, and automated optimization. Our LSTM model has demonstrated reliable performance, achieving:
 
-- MAE: 67.8183
-- RMSE: 84.7019
-- R2: 0.7280
+- **MAE:** 67.8183
+- **RMSE:** 84.7019
+- **R²:** 0.7280
 
-Thank You!
+🚀 **Let's optimize oil & gas production with AI!**
+
