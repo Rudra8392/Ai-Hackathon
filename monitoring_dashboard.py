@@ -8,6 +8,7 @@ import joblib
 def load_data():
     # Load preprocessed data
     data = pd.read_csv('preprocessed_data.csv')
+    data.columns = data.columns.str.strip()  # Remove leading/trailing spaces
     data['Time'] = pd.to_datetime(data['Time'])
     return data
 
@@ -17,7 +18,10 @@ def create_monitoring_dashboard():
     
     # Load data
     data = load_data()
-    
+
+    # Debugging: Check available columns
+    st.write("Available columns:", list(data.columns))
+
     # Sidebar for controls
     st.sidebar.header("Controls")
     date_range = st.sidebar.date_input(
@@ -107,10 +111,10 @@ def create_monitoring_dashboard():
         )
     
     with col4:
-        st.metric(
-            "GOR",
-            f"{filtered_data['GOR'].mean():.0f} scf/bbl"
-        )
+        if 'GOR' in filtered_data.columns:
+            st.metric("GOR", f"{filtered_data['GOR'].mean():.0f} scf/bbl")
+        else:
+            st.warning("GOR data not available")
     
     # Model Performance
     st.subheader("Model Performance")
