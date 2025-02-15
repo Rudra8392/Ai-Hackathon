@@ -8,8 +8,13 @@ import joblib
 def load_data():
     # Load preprocessed data
     data = pd.read_csv('preprocessed_data.csv')
-    data.columns = data.columns.str.strip()  # Remove leading/trailing spaces
+    data.columns = data.columns.str.strip()  # Remove extra spaces
+    data.columns = data.columns.str.lower()  # Convert to lowercase for consistency
     data['Time'] = pd.to_datetime(data['Time'])
+    
+    # Debugging: Print available columns
+    st.write("Columns in dataset:", list(data.columns))
+    
     return data
 
 def create_monitoring_dashboard():
@@ -18,9 +23,6 @@ def create_monitoring_dashboard():
     
     # Load data
     data = load_data()
-
-    # Debugging: Check available columns
-    st.write("Available columns:", list(data.columns))
 
     # Sidebar for controls
     st.sidebar.header("Controls")
@@ -111,8 +113,8 @@ def create_monitoring_dashboard():
         )
     
     with col4:
-        if 'GOR' in filtered_data.columns:
-            st.metric("GOR", f"{filtered_data['GOR'].mean():.0f} scf/bbl")
+        if 'gor' in filtered_data.columns:
+            st.metric("GOR", f"{filtered_data['gor'].mean():.0f} scf/bbl")
         else:
             st.warning("GOR data not available")
     
