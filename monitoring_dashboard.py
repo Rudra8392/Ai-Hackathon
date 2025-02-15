@@ -137,14 +137,6 @@ def create_monitoring_dashboard():
     )
     st.plotly_chart(fig_gor, use_container_width=True)
     
-    # Model Performance
-    st.subheader("Model Performance")
-    try:
-        metrics = joblib.load('models/metrics.joblib')
-        st.write(f"MAE: {metrics['MAE']:.4f}")
-        st.write(f"Training Time: {metrics['Training Time']:.2f} seconds")
-    except:
-        st.write("Model performance metrics not available")
     
     # Historical Data Table
     st.subheader("Historical Data")
