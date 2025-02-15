@@ -3,34 +3,44 @@ import numpy as np
 from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
 import tensorflow as tf
+from tensorflow import Sequential
+from tensorflow import LSTM, Dense, Dropout
+import joblib
+import os
+import time
 
-# Sample code to demonstrate the implementation
 def load_and_preprocess_data():
     print("1. Data Loading and Preprocessing")
     print("--------------------------------")
     
-    # Simulated data loading (replace with actual file paths)
-    print("Loading datasets...")
     try:
-        # For demonstration, creating sample dataframe
-        dates = pd.date_range(start='2023-01-01', end='2023-06-30', freq='H')
-        n_samples = len(dates)
+        # Load actual data
+        lp_data = pd.read_excel("Platform MC_Low Pressure System Monitoring.xlsb")
+        well_data = pd.read_excel("Data_Platform MC - Copy.xlsm")
+        test_data = pd.read_excel("Well_Tests.xlsx")
         
-        sample_data = pd.DataFrame({
-            'Time': dates,
-            'Total_Flow': np.random.normal(1000, 100, n_samples),
-            'Oil_Flow': np.random.normal(700, 50, n_samples),
-            'Water_Flow': np.random.normal(200, 30, n_samples),
-            'Gas_Flow': np.random.normal(500, 80, n_samples),
-            'Pressure': np.random.normal(200, 20, n_samples),
-            'Temperature': np.random.normal(60, 5, n_samples)
-        })
+        # Merge datasets based on common columns (you may need to adjust this based on your actual data structure)
+        merged_data = pd.merge(lp_data, well_data, on='Time', how='outer')
+        merged_data = pd.merge(merged_data, test_data, on='Date', how='outer')
         
-        print("\nSample data shape:", sample_data.shape)
-        print("\nFirst few rows of sample data:")
-        print(sample_data.head())
+        # Handle missing values
+        merged_data = merged_data.interpolate()
         
-        return sample_data
+        # Convert time to datetime if not already
+        merged_data['Time'] = pd.to_datetime(merged_data['Time'])
+        
+        # Sort by time
+        merged_data = merged_data.sort_values('Time')
+        
+        # Select relevant features (adjust based on your data)
+        features = ['Total_Flow', 'Oil_Flow', 'Water_Flow', 'Gas_Flow', 'Pressure', 'Temperature', 'GOR']
+        data = merged_data[['Time'] + features]
+        
+        print("\nMerged data shape:", data.shape)
+        print("\nFirst few rows of merged data:")
+        print(data.head())
+        
+        return data
         
     except Exception as e:
         print(f"Error loading data: {str(e)}")
@@ -51,12 +61,12 @@ def prepare_sequences(data, seq_length=24):
 
 def create_lstm_model(input_shape):
     """Create LSTM model for flow prediction"""
-    model = tf.keras.Sequential([
-        tf.keras.layers.LSTM(64, input_shape=input_shape, return_sequences=True),
-        tf.keras.layers.Dropout(0.2),
-        tf.keras.layers.LSTM(32),
-        tf.keras.layers.Dropout(0.2),
-        tf.keras.layers.Dense(6)  # Predicting 6 parameters (flows, pressure, temperature)
+    model = Sequential([
+        LSTM(64, input_shape=input_shape, return_sequences=True),
+        Dropout(0.2),
+        LSTM(32),
+        Dropout(0.2),
+        Dense(7)  # Predicting 7 parameters (flows, pressure, temperature, GOR)
     ])
     
     model.compile(optimizer='adam', loss='mse', metrics=['mae'])
@@ -93,17 +103,47 @@ def main():
         print("\nModel Summary:")
         model.summary()
         
-        # Train the model (using small number of epochs for demonstration)
+        # Train the model
         print("\nTraining the model...")
+        start_time = time.time()
         history = model.fit(
             X_train, y_train,
-            epochs=2,  # Increased for actual training
+            epochs=50,
             batch_size=32,
             validation_split=0.2,
             verbose=1
         )
+        end_time = time.time()
+        training_time = end_time - start_time
         
-        print("\nTraining completed. The model can now be used for predictions.")
+        print(f"\nTraining completed. Training time: {training_time:.2f} seconds")
+        
+        # Evaluate the model
+        test_loss, test_mae = model.evaluate(X_test, y_test, verbose=0)
+        print(f"\nTest MAE: {test_mae:.4f}")
+        
+        # Save the model
+        model_dir = 'models'
+        if not os.path.exists(model_dir):
+            os.makedirs(model_dir)
+        model_path = os.path.join(model_dir, 'flow_prediction_model')
+        model.save(model_path)
+        print(f"\nModel saved to {model_path}")
+        
+        # Save the scaler
+        scaler_path = os.path.join(model_dir, 'scaler.joblib')
+        joblib.dump(scaler, scaler_path)
+        print(f"Scaler saved to {scaler_path}")
+        
+        # Save evaluation metrics
+        metrics = {
+            'MAE': test_mae,
+            'Training Time': training_time,
+            'Test Loss': test_loss
+        }
+        metrics_path = os.path.join(model_dir, 'metrics.joblib')
+        joblib.dump(metrics, metrics_path)
+        print(f"Evaluation metrics saved to {metrics_path}")
 
 if __name__ == "__main__":
     main()
