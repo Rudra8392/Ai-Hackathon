@@ -107,10 +107,16 @@ def create_monitoring_dashboard():
         )
     
     with col4:
-        st.metric(
-            "GOR",
-            f"{filtered_data['GOR'].mean():.0f} scf/bbl"
-        )
+        if 'GOR' in filtered_data.columns:
+            st.metric(
+                "GOR",
+                f"{filtered_data['GOR'].mean():.0f} scf/bbl"
+            )
+        else:
+            st.metric(
+                "GOR",
+                "N/A"
+            )
     
     # Model Performance
     st.subheader("Model Performance")
@@ -130,3 +136,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
