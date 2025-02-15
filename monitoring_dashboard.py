@@ -9,6 +9,15 @@ def load_data():
     # Load preprocessed data
     data = pd.read_csv('preprocessed_data.csv')
     data['Time'] = pd.to_datetime(data['Time'])
+    
+    # Calculate GOR (assuming Gas_Flow is in standard cubic feet and Oil_Flow is in barrels)
+    if 'Gas_Flow' in data.columns and 'Oil_Flow' in data.columns:
+        data['GOR'] = data['Gas_Flow'] / data['Oil_Flow']
+    else:
+        # If Gas_Flow is not available, we'll use a dummy calculation for demonstration
+        # In a real scenario, you'd need actual gas flow data
+        data['GOR'] = data['Total_Flow'] / data['Oil_Flow'] * 1000  # Dummy calculation
+
     return data
 
 def create_monitoring_dashboard():
@@ -107,16 +116,26 @@ def create_monitoring_dashboard():
         )
     
     with col4:
-        if 'GOR' in filtered_data.columns:
-            st.metric(
-                "GOR",
-                f"{filtered_data['GOR'].mean():.0f} scf/bbl"
-            )
-        else:
-            st.metric(
-                "GOR",
-                "N/A"
-            )
+        st.metric(
+            "GOR",
+            f"{filtered_data['GOR'].mean():.0f} scf/bbl"
+        )
+    
+    # GOR Chart
+    st.subheader("Gas-Oil Ratio (GOR) Over Time")
+    fig_gor = go.Figure()
+    fig_gor.add_trace(go.Scatter(
+        x=filtered_data['Time'],
+        y=filtered_data['GOR'],
+        name='GOR',
+        line=dict(color='purple')
+    ))
+    fig_gor.update_layout(
+        height=400,
+        xaxis_title="Time",
+        yaxis_title="GOR (scf/bbl)"
+    )
+    st.plotly_chart(fig_gor, use_container_width=True)
     
     # Model Performance
     st.subheader("Model Performance")
