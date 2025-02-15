@@ -4,6 +4,10 @@ import plotly.graph_objects as go
 from datetime import datetime, timedelta
 import numpy as np
 import joblib
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import mean_absolute_error
+import time
 
 def load_data():
     # Load preprocessed data
@@ -15,10 +19,35 @@ def load_data():
         data['GOR'] = data['Gas_Flow'] / data['Oil_Flow']
     else:
         # If Gas_Flow is not available, we'll use a dummy calculation for demonstration
-        # In a real scenario, you'd need actual gas flow data
         data['GOR'] = data['Total_Flow'] / data['Oil_Flow'] * 1000  # Dummy calculation
 
     return data
+
+def train_and_save_model(data):
+    # Prepare data for modeling
+    X = data[['Pressure', 'Temperature', 'Water_Flow']]
+    y = data['Total_Flow']
+    
+    # Split the data
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+    
+    # Train a simple model
+    start_time = time.time()
+    model = LinearRegression()
+    model.fit(X_train, y_train)
+    training_time = time.time() - start_time
+    
+    # Make predictions and calculate MAE
+    y_pred = model.predict(X_test)
+    mae = mean_absolute_error(y_test, y_pred)
+    
+    # Save model and metrics
+    joblib.dump(model, 'models/linear_regression_model.joblib')
+    metrics = {
+        'MAE': mae,
+        'Training Time': training_time
+    }
+    joblib.dump(metrics, 'models/metrics.joblib')
 
 def create_monitoring_dashboard():
     st.set_page_config(page_title="Oil & Gas Production Monitoring", layout="wide")
@@ -26,6 +55,11 @@ def create_monitoring_dashboard():
     
     # Load data
     data = load_data()
+    
+    # Train and save model if it doesn't exist
+    if not st.session_state.get('model_trained'):
+        train_and_save_model(data)
+        st.session_state.model_trained = True
     
     # Sidebar for controls
     st.sidebar.header("Controls")
@@ -143,8 +177,8 @@ def create_monitoring_dashboard():
         metrics = joblib.load('models/metrics.joblib')
         st.write(f"MAE: {metrics['MAE']:.4f}")
         st.write(f"Training Time: {metrics['Training Time']:.2f} seconds")
-    except:
-        st.write("Model performance metrics not available")
+    except Exception as e:
+        st.write(f"Error loading model performance metrics: {str(e)}")
     
     # Historical Data Table
     st.subheader("Historical Data")
@@ -155,4 +189,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
