@@ -40,7 +40,7 @@ Check out the live monitoring dashboard:
 1. Clone the repository
 2. Install dependencies:
    ```bash
-   git clone https://github.com/Soumadeep46/Ai-Hackathon
+   git clone https://github.com/Rudra8392/Ai-Hackathon
    cd Ai-Hackathon
    pip install -r requirements.txt
    ```
