@@ -3,12 +3,14 @@ import pandas as pd
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 import matplotlib.pyplot as plt
 import seaborn as sns
-
+from tensorflow import load_model
+import joblib
+import time
 
 class ModelEvaluator:
     def __init__(self):
         self.metrics = {}
-
+        
     def calculate_metrics(self, y_true, y_pred):
         """Calculate various performance metrics"""
         self.metrics = {
@@ -16,9 +18,9 @@ class ModelEvaluator:
             'RMSE': np.sqrt(mean_squared_error(y_true, y_pred)),
             'R2': r2_score(y_true, y_pred)
         }
-
+        
         return self.metrics
-
+    
     def plot_actual_vs_predicted(self, y_true, y_pred, title="Actual vs Predicted"):
         """Create actual vs predicted plot"""
         plt.figure(figsize=(10, 6))
@@ -29,7 +31,7 @@ class ModelEvaluator:
         plt.title(title)
         plt.tight_layout()
         plt.show()
-
+        
     def plot_residuals(self, y_true, y_pred):
         """Create residual plot"""
         residuals = y_true - y_pred
@@ -41,7 +43,7 @@ class ModelEvaluator:
         plt.title("Residual Plot")
         plt.tight_layout()
         plt.show()
-
+        
     def print_metrics_report(self):
         """Print formatted metrics report"""
         print("\nModel Performance Metrics")
@@ -49,31 +51,55 @@ class ModelEvaluator:
         for metric, value in self.metrics.items():
             print(f"{metric}: {value:.4f}")
 
-
 def main():
-    # Create sample data for demonstration
-    np.random.seed(42)
-    n_samples = 1000
-
-    # True relationship with some noise
-    X = np.random.normal(1000, 200, n_samples)
-    noise = np.random.normal(0, 50, n_samples)
-    y_true = 0.8 * X + 100 + noise
-
-    # Simulated predictions (slightly off to show evaluation)
-    y_pred = 0.75 * X + 120 + np.random.normal(0, 60, n_samples)
-
+    # Load the model and scaler
+    model = load_model('models/flow_prediction_model')
+    scaler = joblib.load('models/scaler.joblib')
+    
+    # Load test data (assuming you've split and saved test data separately)
+    test_data = pd.read_csv('test_data.csv')
+    
+    # Prepare test data
+    X_test = test_data.drop(['Time', 'Total_Flow'], axis=1)
+    y_test = test_data['Total_Flow']
+    
+    # Scale test data
+    X_test_scaled = scaler.transform(X_test)
+    
+    # Make predictions
+    start_time = time.time()
+    y_pred = model.predict(X_test_scaled.reshape(X_test_scaled.shape[0], 1, -1))
+    end_time = time.time()
+    prediction_time = end_time - start_time
+    
+    # Inverse transform predictions
+    y_pred = scaler.inverse_transform(y_pred)[:, 0]  # Assuming Total_Flow is the first column
+    
     # Initialize evaluator
     evaluator = ModelEvaluator()
-
+    
     # Calculate metrics
-    metrics = evaluator.calculate_metrics(y_true, y_pred)
+    metrics = evaluator.calculate_metrics(y_test, y_pred)
     evaluator.print_metrics_report()
-
+    
     # Create plots
-    evaluator.plot_actual_vs_predicted(y_true, y_pred, "Flow Rate: Actual vs Predicted")
-    evaluator.plot_residuals(y_true, y_pred)
-
+    evaluator.plot_actual_vs_predicted(y_test, y_pred, "Flow Rate: Actual vs Predicted")
+    evaluator.plot_residuals(y_test, y_pred)
+    
+    # Print additional information
+    print(f"\nPrediction Time: {prediction_time:.4f} seconds")
+    print(f"Average Prediction Time per Sample: {prediction_time/len(y_test):.6f} seconds")
+    
+    # Save results
+    results = {
+        'MAE': metrics['MAE'],
+        'RMSE': metrics['RMSE'],
+        'R2': metrics['R2'],
+        'Prediction Time': prediction_time,
+        'Avg Prediction Time per Sample': prediction_time/len(y_test)
+    }
+    joblib.dump(results, 'results/model_evaluation_results.joblib')
+    print("\nResults saved to results/model_evaluation_results.joblib")
 
 if __name__ == "__main__":
     main()
